@@ -38,6 +38,7 @@
         background-color: cornSilk;
         padding: 0.5rem;
         border-radius: 50%;
+        cursor: default;
       }
 
       #container > div.blue {
@@ -48,27 +49,16 @@
     <title>Shape Generator</title>
   </head>
   <body>
-    <h1><a href='index.html'>Shape Generator</a></h1>
+    <h1>Shape Generator</h1>
     <h2>Todos</h2>
     <ul>
-      <li>Create a repo named shape-generator and add this index.html page</li>
-      <li>Currently clicking on the center of a circle causes the center to disappear. This is a bug, the blue circle should disappear.</li>
-      <li>
-        Currently the user can enter anything in the input field. Restrict the input to numbers and limit the values to be greater than 25 and less than 250. 
-      </li>
-      <li>
-        Within the h1 element, display the number of circles which are displayed.
-      </li>
-      <li>
-        Within the h1 element, display the average size of the current circles. 
-      </li>
       <li>
         Instead of always generating circles, generate either a circle or a square.
       </li>
     </ul>
     <a href='https://github.com/FullstackAcademy/shape-generator'>Repo</a>
     <form>
-      <input name='px' value='25'/>
+      <input type='number' min=26 max=249 value='50'/>
     </form>
     <div id='container'>
     </div>
@@ -78,13 +68,29 @@
       const link = document.querySelector('a');
       const container = document.querySelector('#container');
 
+      //my added global variables
+      const h1 = document.querySelector('h1');
+      let circleCount = 0;
+      let totalCircleSize = 0;
+      let circleSizeAvg = 0
+
       container.addEventListener('click', (ev)=>{
-        if(!ev.target.id){
-          ev.target.parentNode.removeChild(ev.target);
+        const target = ev.target;
+        const parent = target.parentNode;
+        const grandparent = parent.parentNode;
+
+        totalCircleSize -= Number(target.innerText);
+
+        if (!target.id){
+          target.tagName === 'SPAN' ? grandparent.removeChild(parent)
+            : parent.removeChild(target);
+
+          //modify h1 element
+          calculateCircleStats(0); //remove circle
         }
       });
 
-      const generateCircle = ()=> {
+      const generateCircle = () => {
         const size = `${input.value}px`;
         const circle = document.createElement('div');
         circle.style.width = size;
@@ -93,21 +99,42 @@
         const span = document.createElement('span');
         span.innerText = input.value;
         circle.appendChild(span);
-        input.value = 25 + Math.floor(Math.random()*50);
+        input.value = 26 + Math.floor(Math.random()*50);
         window.setTimeout(function(){
           circle.classList.add('blue');
         }, 500);
+
+        //modify h1 element
+        totalCircleSize += Number(span.innerText);
+        calculateCircleStats(1); //add circle
       };
+
+      //pass 1 to add circle, 0 to remove circle
+      const calculateCircleStats = (num) => {
+        if (num) {
+          circleCount++;
+          calculateAvg();
+          modifyH1Text();
+        }
+        else {
+          circleCount--;
+          calculateAvg();
+          modifyH1Text();
+        }
+      }
+
+      const calculateAvg = () => {
+        circleCount ? circleSizeAvg = (totalCircleSize / circleCount).toFixed(1) : circleSizeAvg = 0;
+      }
+
+      const modifyH1Text = () => {
+        h1.innerText = `Shape Generator - \n \n Number of Circles: ${circleCount} \n Total Circle Size: ${totalCircleSize} \n Average Circle Size: ${circleSizeAvg}`;
+      }
 
       form.addEventListener('submit', (ev)=> {
         ev.preventDefault();
         generateCircle();
       });
-
-      generateCircle();
-      generateCircle();
-      generateCircle();
-
     </script>
   </body>
 </html>
